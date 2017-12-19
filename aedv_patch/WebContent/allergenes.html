@@ -1,0 +1,75 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+<body>
+<script src="includes/jmesa/jquery.min.js"></script>
+<script>
+$.noConflict();
+jQuery(document).ready(function($) { 
+	var xml_data;
+	var select_options = "<option value='0'>Negative<option value='1'>&#x00B1;<option value='2'>+<option value='3'>++<option value='4'>+++</select>";
+	$.ajax({
+		type: "GET",
+		url: "substances.xml",
+		dataType: "xml",
+		success: saveXML
+	});
+	function saveXML(xml){
+		// store the xml-object
+		xml_data = xml;
+		parseXML(xml_data);
+	}
+	function parseXML(xml){
+		//console.log("in parse");
+		$(xml).find("serie").each(function(){
+			$("#series").append($("<input class='serie' />") // a new input element ..
+				.attr("type", "checkbox") // .. of type checkbox ..
+				.attr("id", $(this).attr("serie_id")) // .. with given name
+			)
+			$("#series").append($(this).attr("serie_name"));
+			$("#series").append(" <br />");
+		});
+	}
+	
+	function composeSelects(serie_id){
+		console.log("in composeSelects for " + serie_id );
+		var select_div;
+		select_div = "<div id='div_" + serie_id + "'>"
+		//this is a bit sloppy, but loop again through the series
+		$(xml_data).find("serie").each(function(){
+			if ($(this).attr("serie_id") == serie_id){
+				select_div = select_div + "<b>" + $(this).attr("serie_name") + "</b><br /><table>";
+				$(this).find("substance").each(function(){
+					select_div = select_div + "<tr><td>" + $(this).text() + "</td><td><select id='sel_" + $(this).attr("substance_id") + "'>";
+					select_div = select_div + select_options + "</td></tr>";
+				})
+			select_div = select_div + "</table>";
+			}
+		})
+		select_div = select_div + "</div>";
+		$("#selects").append(select_div);
+		}
+		
+	//console.log("before windowsettimeout");
+	window.setTimeout(function(){
+		$(':checkbox.serie').change(function() {
+				if($(this).is(":checked")) {
+					composeSelects($(this)[0].id);
+				}else{
+					var div_id = "#div_" + $(this)[0].id;
+					$(div_id).remove();
+				}
+			});
+	},100);
+})
+</script>
+
+<div id="wrapper">
+	<div id="series">Step 1: select the patch(es)<br /></div>
+	<div id="selects">Step 2: select the outcome</div>
+	<div id="action">Step 3: <input type="button" value="write to openclinica" /></div>
+</div>
+</body>
+</html>
