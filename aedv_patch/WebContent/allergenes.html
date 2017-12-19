@@ -4,7 +4,7 @@
 <link rel="stylesheet" href="style.css" type="text/css" />
 </head>
 <body>
-<script src="includes/jmesa/jquery.min.js"></script>
+<script src="jquery.min.js"></script>
 <script>
 $.noConflict();
 jQuery(document).ready(function($) { 
@@ -63,13 +63,21 @@ jQuery(document).ready(function($) {
 				}
 			});
 	},100);
+	
+	// what to do when we click submit
+	$("#back_to_oc").click(function(){
+        var input_on_opener = window.opener.document.getElementById("the_input_id");
+        $(input_on_opener).val("new value");
+        close();
+     });
+	
 })
 </script>
 
 <div id="wrapper">
 	<div id="series">Step 1: select the patch(es)<br /></div>
 	<div id="selects">Step 2: select the outcome</div>
-	<div id="action">Step 3: <input type="button" value="write to openclinica" /></div>
+	<div id="action">Step 3: <input type="button" value="write to openclinica" id="back_to_oc" /></div>
 </div>
 </body>
 </html>
