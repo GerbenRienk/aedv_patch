@@ -19,8 +19,33 @@ jQuery(document).ready(function($) {
 	function saveXML(xml){
 		// store the xml-object
 		xml_data = xml;
-		parseXML(xml_data);
+		composeMakers(xml_data);
 	}
+	
+	function setEventHandlersSerie(){
+		// remove the existing events
+		$(':checkbox.serie').off("change");
+		$(':checkbox.serie').change(function() {
+			if($(this).is(":checked")) {
+				composeSelects($(this)[0].id);
+			}else{
+				var div_id = "#div_" + $(this)[0].id;
+				$(div_id).remove();
+			}
+		});
+	}
+	function composeMakers(xml){
+		//console.log("in compose makers");
+		$(xml).find("maker").each(function(){
+			$("#makers").append($("<input class='maker' />") // a new input element ..
+				.attr("type", "checkbox") // .. of type checkbox ..
+				.attr("id", $(this).attr("maker_id")) // .. with given name
+			)
+			$("#makers").append($(this).attr("maker_name"));
+			$("#makers").append(" <br />");
+		});
+	}
+
 	function parseXML(xml){
 		//console.log("in parse");
 		$(xml).find("serie").each(function(){
@@ -33,8 +58,28 @@ jQuery(document).ready(function($) {
 		});
 	}
 	
+	function composeSeries(maker_id){
+		console.log("in composeSeries for " + maker_id );
+		var serie_div;
+		serie_div = "<div id='div_" + maker_id + "'>"
+		//this is a bit sloppy, but loop again through the makers
+		$(xml_data).find("maker").each(function(){
+			if ($(this).attr("maker_id") == maker_id){
+				serie_div = serie_div + "<b>" + $(this).attr("maker_name") + "</b><br />";
+				$(this).find("serie").each(function(){
+					serie_div = serie_div + "<input type='checkbox' class='serie' id='" + $(this).attr("serie_id") + "' />";
+					serie_div = serie_div + $(this).attr("serie_name") + " <br />"
+				})
+			serie_div = serie_div + "";
+			}
+		})
+		serie_div = serie_div + "</div>";
+		$("#series").append(serie_div);
+		setEventHandlersSerie();
+		
+	}
+
 	function composeSelects(serie_id){
-		console.log("in composeSelects for " + serie_id );
 		var select_div;
 		select_div = "<div id='div_" + serie_id + "'>"
 		//this is a bit sloppy, but loop again through the series
@@ -49,25 +94,36 @@ jQuery(document).ready(function($) {
 			}
 		})
 		select_div = select_div + "</div>";
-		$("#selects").append(select_div);
-		}
-		
-	//console.log("before windowsettimeout");
+		$("#substances").append(select_div);	
+	}
+
 	window.setTimeout(function(){
-		$(':checkbox.serie').change(function() {
-				if($(this).is(":checked")) {
-					composeSelects($(this)[0].id);
-				}else{
-					var div_id = "#div_" + $(this)[0].id;
-					$(div_id).remove();
-				}
-			});
+		// define what will happen when we click the maker checkboxes
+		$(':checkbox.maker').change(function() {
+			if($(this).is(":checked")) {
+				composeSeries($(this)[0].id);
+			}else{
+				var div_id = "#div_" + $(this)[0].id;
+				$(div_id).find("input:checkbox:checked").each(function(){
+					$("#div_" + $(this)[0].id).remove();
+				})
+				$(div_id).remove();
+			}
+		});
 	},100);
 	
 	// what to do when we click submit
 	$("#back_to_oc").click(function(){
         var input_on_opener = window.opener.document.getElementById("the_input_id");
-        $(input_on_opener).val("new value");
+        // list the makers
+        var selections = '{"makers":[';
+        $("#makers").find("input:checkbox:checked").each(function(){
+        	selections = selections + '"' + $(this)[0].id + '",';
+				})
+		// remove last comma
+		selections = selections.substr(0,selections.length - 1);
+        selections = selections + ']';
+        $(input_on_opener).val(selections);
         close();
      });
 	
@@ -75,9 +131,10 @@ jQuery(document).ready(function($) {
 </script>
 
 <div id="wrapper">
-	<div id="series">Step 1: select the patch(es)<br /></div>
-	<div id="selects">Step 2: select the outcome</div>
-	<div id="action">Step 3: <input type="button" value="write to openclinica" id="back_to_oc" /></div>
+	<div id="makers">Step 1: select the maker(s)<br /></div>
+	<div id="series">Step 2: select the patch(es)/serie(s)<br /></div>
+	<div id="substances">Step 3: select the outcome</div>
+	<div id="action">Step 4: <input type="button" value="write to openclinica" id="back_to_oc" /></div>
 </div>
 </body>
 </html>

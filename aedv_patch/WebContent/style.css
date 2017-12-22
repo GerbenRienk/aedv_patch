@@ -1,4 +1,11 @@
 #wrapper {
+    /* border: 5px solid blue; */
+}
+#makers {
+    display: inline-block;
+    /* width:500px; */
+    overflow:hidden;
+    vertical-align:top;
     border: 5px solid blue;
 }
 #series {
@@ -7,7 +14,7 @@
     overflow:hidden;
     border: 5px solid red;
 }
-#selects {
+#substances {
     vertical-align:top;
     display: inline-block;
     /* width:200px; */
