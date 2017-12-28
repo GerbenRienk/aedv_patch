@@ -9,6 +9,8 @@
 $.noConflict();
 jQuery(document).ready(function($) { 
 	var xml_data;
+	// make reference to the object that holds the selections and which will hold the new selections
+	var input_on_opener = window.opener.document.getElementById("the_input_id");
 	var select_options = "<option value='0'>Negative<option value='1'>&#x00B1;<option value='2'>+<option value='3'>++<option value='4'>+++</select>";
 	$.ajax({
 		type: "GET",
@@ -46,20 +48,8 @@ jQuery(document).ready(function($) {
 		});
 	}
 
-	function parseXML(xml){
-		//console.log("in parse");
-		$(xml).find("serie").each(function(){
-			$("#series").append($("<input class='serie' />") // a new input element ..
-				.attr("type", "checkbox") // .. of type checkbox ..
-				.attr("id", $(this).attr("serie_id")) // .. with given name
-			)
-			$("#series").append($(this).attr("serie_name"));
-			$("#series").append(" <br />");
-		});
-	}
-	
 	function composeSeries(maker_id){
-		console.log("in composeSeries for " + maker_id );
+		console.log("in composeSeries " + maker_id);
 		var serie_div;
 		serie_div = "<div id='div_" + maker_id + "'>"
 		//this is a bit sloppy, but loop again through the makers
@@ -75,8 +65,7 @@ jQuery(document).ready(function($) {
 		})
 		serie_div = serie_div + "</div>";
 		$("#series").append(serie_div);
-		setEventHandlersSerie();
-		
+		setEventHandlersSerie();		
 	}
 
 	function composeSelects(serie_id){
@@ -110,23 +99,81 @@ jQuery(document).ready(function($) {
 				$(div_id).remove();
 			}
 		});
-	},100);
+		// now continue by reading the selections previously made
+		synchSelections();
+
+	},500);
+	
+	function removeLastComma(this_string){
+		if (this_string.substr(this_string.length - 1) == ","){
+			this_string = this_string.substr(0,this_string.length - 1);
+		}
+		return this_string;	
+	}
+	
+	// function to analyze the existing selections
+	function synchSelections(){
+		var selections = $.parseJSON($(input_on_opener).val());
+		var check_box_id;
+		$.each(selections.makers , function(index, val) { 
+			check_box_id = "input[id=" + val + "]";
+			$(check_box_id).attr('checked', true);
+			$(check_box_id).change();
+		});
+		$.each(selections.series , function(index, val) { 
+			check_box_id = "input[id=" + val + "]";
+			$(check_box_id).attr('checked', true);
+			$(check_box_id).change();
+		});
+		
+		var selects = selections.substances[0];
+		//var t = $.parseJSON(selects);
+		$.each(selects , function(sel_id, sel_val) { 
+			//console.log(sel_id + ": " + sel_val);
+			check_box_id = "select[id=" + sel_id + "]";
+			$(check_box_id).val(sel_val);
+			//$(check_box_id).change();
+		});
+	}
 	
 	// what to do when we click submit
 	$("#back_to_oc").click(function(){
-        var input_on_opener = window.opener.document.getElementById("the_input_id");
+        
         // list the makers
         var selections = '{"makers":[';
         $("#makers").find("input:checkbox:checked").each(function(){
         	selections = selections + '"' + $(this)[0].id + '",';
 				})
+		selections = removeLastComma(selections) + ']';
+        
+        // list the series
+        selections = selections + ' , "series":[';
+        $("#series input:checkbox:checked").each(function(){
+        	selections = selections + '"' + $(this)[0].id + '",';
+				})
+		selections = removeLastComma(selections) + ']';
+        
+        // list the substances
+        selections = selections + ' , "substances":[{';
+        $("#substances select").each(function(){
+        	selections = selections + '"' + $(this)[0].id + '":"' + $(this).val() + '" ,';
+				})
 		// remove last comma
-		selections = selections.substr(0,selections.length - 1);
-        selections = selections + ']';
+		selections = removeLastComma(selections) + '}]}';
+
+        // write the selections in the opener 
         $(input_on_opener).val(selections);
+        // close this window
         close();
      });
 	
+	// what to do when we click ignore
+	$("#ignore_and_return").click(function(){
+        // close this window
+        close();
+     });
+	
+
 })
 </script>
 
@@ -134,7 +181,9 @@ jQuery(document).ready(function($) {
 	<div id="makers">Step 1: select the maker(s)<br /></div>
 	<div id="series">Step 2: select the patch(es)/serie(s)<br /></div>
 	<div id="substances">Step 3: select the outcome</div>
-	<div id="action">Step 4: <input type="button" value="write to openclinica" id="back_to_oc" /></div>
+	<div id="action">Step 4: <input type="button" value="write to openclinica" id="back_to_oc" />
+	 or  <input type="button" value="cancel" id="ignore_and_return" />
+	</div>
 </div>
 </body>
 </html>
