@@ -9,8 +9,9 @@
 $.noConflict();
 jQuery(document).ready(function($) { 
 	var xml_data;
-	// make reference to the object that holds the selections and which will hold the new selections
-	var input_on_opener = window.opener.document.getElementById("the_input_id");
+	// make reference to the button that was clicked to open this window
+	var button_opener  = window.opener.document.getElementById("ext_window");
+	var oc_textarea = $(button_opener).parent().parent().find("textarea");
 	var select_options = "<option value='0'>Negative<option value='1'>&#x00B1;<option value='2'>+<option value='3'>++<option value='4'>+++</select>";
 	$.ajax({
 		type: "GET",
@@ -102,7 +103,7 @@ jQuery(document).ready(function($) {
 		// now continue by reading the selections previously made
 		synchSelections();
 
-	},500);
+	},1000);
 	
 	function removeLastComma(this_string){
 		if (this_string.substr(this_string.length - 1) == ","){
@@ -113,7 +114,7 @@ jQuery(document).ready(function($) {
 	
 	// function to analyze the existing selections
 	function synchSelections(){
-		var selections = $.parseJSON($(input_on_opener).val());
+		var selections = $.parseJSON($(oc_textarea).val());
 		var check_box_id;
 		$.each(selections.makers , function(index, val) { 
 			check_box_id = "input[id=" + val + "]";
@@ -162,7 +163,9 @@ jQuery(document).ready(function($) {
 		selections = removeLastComma(selections) + '}]}';
 
         // write the selections in the opener 
-        $(input_on_opener).val(selections);
+        $(oc_textarea).val(selections);
+        // set the status to changed
+        $(oc_textarea).change();
         // close this window
         close();
      });
