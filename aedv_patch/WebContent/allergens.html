@@ -11,7 +11,10 @@ jQuery(document).ready(function($) {
 	var xml_data;
 	// make reference to the button that was clicked to open this window
 	var button_opener  = window.opener.document.getElementById("ext_window");
+	// make a reference to the summary field, using the beacon named BS
+	var beacon_summary = window.opener.document.getElementById("BS");
 	var oc_textarea = $(button_opener).parent().parent().find("textarea");
+	var oc_summary = $(beacon_summary).parent().parent().find("textarea");
 	var select_options = "<option value='0'>Negative<option value='1'>&#x00B1;<option value='2'>+<option value='3'>++<option value='4'>+++</select>";
 	$.ajax({
 		type: "GET",
@@ -58,7 +61,7 @@ jQuery(document).ready(function($) {
 			if ($(this).attr("maker_id") == maker_id){
 				serie_div = serie_div + "<b>" + $(this).attr("maker_name") + "</b><br />";
 				$(this).find("serie").each(function(){
-					serie_div = serie_div + "<input type='checkbox' class='serie' id='" + $(this).attr("serie_id") + "' />";
+					serie_div = serie_div + "<input type='checkbox' class='serie' id='" + $(this).attr("serie_id") + "' name='" + $(this).attr("serie_name") + "'/>";
 					serie_div = serie_div + $(this).attr("serie_name") + " <br />"
 				})
 			serie_div = serie_div + "";
@@ -77,7 +80,9 @@ jQuery(document).ready(function($) {
 			if ($(this).attr("serie_id") == serie_id){
 				select_div = select_div + "<b>" + $(this).attr("serie_name") + "</b><br /><table>";
 				$(this).find("substance").each(function(){
-					select_div = select_div + "<tr><td>" + $(this).text() + "</td><td><select id='sel_" + $(this).attr("substance_id") + "'>";
+					select_div = select_div + "<tr><td>" + $(this).text() + "</td><td>"
+					select_div = select_div + "<select id='" + $(this).attr("substance_id") + "' "
+					select_div = select_div + "name='" + $(this).text() + "'>";
 					select_div = select_div + select_options + "</td></tr>";
 				})
 			select_div = select_div + "</table>";
@@ -130,18 +135,21 @@ jQuery(document).ready(function($) {
 		var selects = selections.substances[0];
 		//var t = $.parseJSON(selects);
 		$.each(selects , function(sel_id, sel_val) { 
-			//console.log(sel_id + ": " + sel_val);
 			check_box_id = "select[id=" + sel_id + "]";
 			$(check_box_id).val(sel_val);
-			//$(check_box_id).change();
 		});
 	}
 	
 	// what to do when we click submit
 	$("#back_to_oc").click(function(){
-        
+		
+		//$(":focus").each(function() {
+			//console.log("focus: " + this.id );
+		//});
+		
         // list the makers
         var selections = '{"makers":[';
+        var summary = 'Series:\n-------\n';
         $("#makers").find("input:checkbox:checked").each(function(){
         	selections = selections + '"' + $(this)[0].id + '",';
 				})
@@ -153,7 +161,11 @@ jQuery(document).ready(function($) {
         	selections = selections + '"' + $(this)[0].id + '",';
 				})
 		selections = removeLastComma(selections) + ']';
-        
+        // list summary of the series
+        $("#series input:checkbox:checked").each(function(){
+        	summary = summary + $(this)[0].name + '\n';
+				})
+		
         // list the substances
         selections = selections + ' , "substances":[{';
         $("#substances select").each(function(){
@@ -161,9 +173,19 @@ jQuery(document).ready(function($) {
 				})
 		// remove last comma
 		selections = removeLastComma(selections) + '}]}';
+		// list summary of the substances
+		summary = summary + '\nSubstances:\n-----------\n';
+        $("#substances select").each(function(){
+        	if ($(this).val() > 0){
+        		summary = summary + $(this)[0].name + ': ' + $(this).find('option:selected').text() + '\n';	
+        	}
+		})
+		summary = summary + '---------------\nend of summary';
 
         // write the selections in the opener 
         $(oc_textarea).val(selections);
+        $(oc_summary).val(summary);
+
         // set the status to changed
         $(oc_textarea).change();
         // close this window
