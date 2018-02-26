@@ -16,6 +16,8 @@ jQuery(document).ready(function($) {
 	var oc_textarea = $(button_opener).parent().parent().find("textarea");
 	var oc_summary = $(beacon_summary).parent().parent().find("textarea");
 	var select_options = "<option value='0'>Negative<option value='1'>&#x00B1;<option value='2'>+<option value='3'>++<option value='4'>+++</select>";
+	var relevance_options = "<option value=''><option value='10000'>Current<option value='20000'>Past<option value='30000'>Unknown<option value='40000'>Not allergic<option value='50000'>Sensitization<option value='60000'>Cross<option value='70000'>Occupational</select>";
+	var time_options = "<option value=''><option value='30'>30m<option value='48'>48h<option value='72'>72h<option value='96'>96h<option value='168'>168h</select>";
 	$.ajax({
 		type: "GET",
 		url: "substances.xml",
@@ -79,11 +81,17 @@ jQuery(document).ready(function($) {
 		$(xml_data).find("serie").each(function(){
 			if ($(this).attr("serie_id") == serie_id){
 				select_div = select_div + "<b>" + $(this).attr("serie_name") + "</b><br /><table>";
+				select_div = select_div + "<tr><td>substance</td><td>result</td></td><td>relevance</td></td><td>time</td></tr>";
 				$(this).find("substance").each(function(){
 					select_div = select_div + "<tr><td>" + $(this).text() + "</td><td>"
 					select_div = select_div + "<select id='" + $(this).attr("substance_id") + "' "
-					select_div = select_div + "name='" + $(this).text() + "'>";
-					select_div = select_div + select_options + "</td></tr>";
+					select_div = select_div + "name='" + serie_id + ": " + $(this).text() + "' class='subst'>";
+					select_div = select_div + select_options + "</td><td>";
+					select_div = select_div + "<select id='" + $(this).attr("substance_id") + "_rel'>"
+					select_div = select_div + relevance_options + "</td><td>";
+					select_div = select_div + "<select id='" + $(this).attr("substance_id") + "_tim'>"
+					select_div = select_div + time_options + "</td><td>";
+					select_div = select_div + "</tr>";
 				})
 			select_div = select_div + "</table>";
 			}
@@ -148,6 +156,8 @@ jQuery(document).ready(function($) {
 		//});
 		
         // list the makers
+        var substRel;
+        var substTime;
         var selections = '{"makers":[';
         var summary = 'Series:\n-------\n';
         $("#makers").find("input:checkbox:checked").each(function(){
@@ -173,11 +183,17 @@ jQuery(document).ready(function($) {
 				})
 		// remove last comma
 		selections = removeLastComma(selections) + '}]}';
+		
 		// list summary of the substances
 		summary = summary + '\nSubstances:\n-----------\n';
-        $("#substances select").each(function(){
+        $(".subst").each(function(){
         	if ($(this).val() > 0){
-        		summary = summary + $(this)[0].name + ': ' + $(this).find('option:selected').text() + '\n';	
+        		substRel = '#' + $(this)[0].id + '_rel';
+        		substTim = '#' + $(this)[0].id + '_tim';
+        		summary = summary + $(this)[0].name + '=' + $(this).find('option:selected').text();
+        		summary = summary + ' / Relevance=' + $(substRel).find('option:selected').text();
+        		summary = summary + ' / Time=' + $(substTim).find('option:selected').text();
+        		summary = summary + '\n';	
         	}
 		})
 		summary = summary + '---------------\nend of summary';
@@ -188,6 +204,7 @@ jQuery(document).ready(function($) {
 
         // set the status to changed
         $(oc_textarea).change();
+        $(oc_summary).change();
         // close this window
         close();
      });

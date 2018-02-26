@@ -28,3 +28,8 @@
     
     border: 5px solid yellow;
 }
+body, select{
+    font-family: Tahoma, Arial, Helvetica, Sans-Serif;
+    font-size: 11px;
+    font-style: normal;
+}
