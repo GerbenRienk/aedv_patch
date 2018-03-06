@@ -8,6 +8,9 @@
 <script>
 $.noConflict();
 jQuery(document).ready(function($) { 
+	// this version of the page will write the selection of subtances in a
+	// json-correct and clean way.
+	// however this solution was not preferred by the end-user, which is allergens.html
 	// define the object with the xml-data here, so we can use it everywhere in our code
 	var xml_data;
 	// make reference to the button that was clicked to open this window
@@ -126,7 +129,7 @@ jQuery(document).ready(function($) {
 	
 	// function to analyze the existing selections
 	function synchSelections(){
-		// first the makers that were chosen before ...
+		// first the makers that were chosen before
 		var selections = $.parseJSON($(oc_textarea).val());
 		var check_box_id;
 		$.each(selections.makers , function(index, val) { 
@@ -134,17 +137,25 @@ jQuery(document).ready(function($) {
 			$(check_box_id).attr('checked', true);
 			$(check_box_id).change();
 		});
-		// then the series ...
+		// then the series
 		$.each(selections.series , function(index, val) { 
 			check_box_id = "input[id=" + val + "]";
 			$(check_box_id).attr('checked', true);
 			$(check_box_id).change();
 		});
-		// now the substances.
-		var selects = selections.substances[0];
-		$.each(selects , function(sel_id, sel_val) { 
-			check_box_id = "select[id=" + sel_id + "]";
-			$(check_box_id).val(sel_val);
+		// now the substances
+		var substances = selections.substances[0];
+		var select_id;
+		$.each(substances , function(subst_id, subst_values) { 
+			//console.log("substance: " + subst_id );
+			select_id = "select[id=" + subst_id + "]";
+			$(select_id).val(subst_values.res);
+			if (subst_values.res > 0){
+				select_id = "select[id=" + subst_id + "_rel]";
+				$(select_id).val(subst_values.rel);
+				select_id = "select[id=" + subst_id + "_tim]";
+				$(select_id).val(subst_values.tim);
+			}
 		});
 	}
 	
@@ -171,19 +182,21 @@ jQuery(document).ready(function($) {
         	summary = summary + $(this)[0].name + '\n';
 				})
 		
+        // list the substances
+        selections = selections + ' , "substances":[{';
+		
 		// list substances plus summary of the substances
-		selections = selections + ' , "substances":[{';
 		summary = summary + '\nSubstances:\n-----------\n';
         $(".subst").each(function(){
     		substRel = '#' + $(this)[0].id + '_rel';
     		substTim = '#' + $(this)[0].id + '_tim';
-    		selections = selections + '"' + $(this)[0].id + '":"' + $(this).val() + '" ';
+    		selections = selections + '"' + $(this)[0].id + '":{"res":"' + $(this).val() + '"';
     		if ($(this).val() > 0){
-	    		selections = selections + ',';
-	    		selections = selections + '"' + $(this)[0].id + '_rel":"' + $(substRel).val() + '" ,';
-	    		selections = selections + '"' + $(this)[0].id + '_tim":"' + $(substTim).val() + '" ';
+	    		selections = selections + ' ,';
+	    		selections = selections + '"rel":"' + $(substRel).val() + '",';
+	    		selections = selections + '"tim":"' + $(substTim).val() + '"';
     		}
-    		selections = selections + ',';
+    		selections = selections + '} ,';
     		
     		if ($(this).val() > 0){
         		summary = summary + $(this)[0].name + '=' + $(this).find('option:selected').text();

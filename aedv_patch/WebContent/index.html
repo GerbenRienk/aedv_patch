@@ -148,6 +148,15 @@ Summary
                             </td>
                             <td valign="top">
                             <div id="BS">Beacon for summary field</div>
+<script src="jquery.min.js"></script>
+<script>
+$.noConflict();
+jQuery(document).ready(function($) { 
+	var oc_summary = $("#BS").parent().parent().find("textarea");
+	$(oc_summary).attr("cols","100");
+	$(oc_summary).attr("rows","20");
+})
+</script>
                                 </td>
                         </tr>
                             
