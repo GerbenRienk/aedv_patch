@@ -80,7 +80,7 @@ jQuery(document).ready(function($) {
 		$(xml_data).find("serie").each(function(){
 			if ($(this).attr("serie_id") == serie_id){
 				select_div = select_div + "<b>" + $(this).attr("serie_name") + "</b><br /><table>";
-				select_div = select_div + "<tr><td>substance</td><td>result</td></td><td>relevance</td></td><td>time</td></tr>";
+				select_div = select_div + "<tr><td>sustancia</td><td>resultado</td></td><td>relevancia</td></tr>";
 				$(this).find("substance").each(function(){
 					select_div = select_div + "<tr><td>" + $(this).text() + "</td><td>"
 					select_div = select_div + "<select id='" + $(this).attr("substance_id") + "' "
