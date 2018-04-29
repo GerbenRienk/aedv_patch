@@ -18,7 +18,7 @@ jQuery(document).ready(function($) {
 	var oc_summary = $(beacon_summary).parent().parent().find("textarea");
 	var select_options = "<option value='0'>Negativo<option value='22'>&#x00B1;<option value='37'>+<option value='45'>++<option value='50'>+++<option value='5'>Irritante<option value='3'>No parcheado</select>";
 	var relevance_options = "<option value=''><option value='10000'>Presente<option value='20000'>Pasada<option value='30000'>Desconocida<option value='40000'>Irritativa<option value='50000'>Sensibilizacion activa<option value='60000'>Reaccion cruzada</select>";
-	var time_options = "<option value=''><option value='30'>30m<option value='48'>48h<option value='72'>72h<option value='96'>96h<option value='168'>168h</select>";
+	// var time_options = "<option value=''><option value='30'>30m<option value='48'>48h<option value='72'>72h<option value='96'>96h<option value='168'>168h</select>";
 	$.ajax({
 		type: "GET",
 		url: "substances.xml",
@@ -87,9 +87,9 @@ jQuery(document).ready(function($) {
 					select_div = select_div + "name='" + serie_id + ": " + $(this).text() + "' class='subst'>";
 					select_div = select_div + select_options + "</td><td>";
 					select_div = select_div + "<select id='" + $(this).attr("substance_id") + "_rel'>"
-					select_div = select_div + relevance_options + "</td><td>";
-					select_div = select_div + "<select id='" + $(this).attr("substance_id") + "_tim'>"
-					select_div = select_div + time_options + "</td><td>";
+					select_div = select_div + relevance_options + "</td>";
+					// select_div = select_div + "<td><select id='" + $(this).attr("substance_id") + "_tim'>"
+					// select_div = select_div + time_options + "</td><td>";
 					select_div = select_div + "</tr>";
 				})
 			select_div = select_div + "</table>";
